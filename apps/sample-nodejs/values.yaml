@@ -1,0 +1,50 @@
+replicaCount: 2
+
+image:
+  repository: idoshoshani123/sample-nodejs
+  tag: "1.0.0-4"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: dockerhub-pull-secret
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: sample-nodejs.local
+  path: /
+  pathType: Prefix
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+# App reads PORT from env; everything here is injected via envFrom.
+config:
+  PORT: "8080"
+  NODE_ENV: "production"
+
+# NOTE: demo only. Real secrets belong in a SealedSecret / external secret store.
+secret:
+  API_KEY: "changeme"
+
+# Probes use the app's built-in endpoints.
+probes:
+  readiness:
+    path: /ready
+  liveness:
+    path: /live
+
+# Bonus: let Prometheus scrape the app's /metrics endpoint.
+metrics:
+  enabled: true
+  path: /metrics
