@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sample-nodejs
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/IdoShoshani/devops-challenge-gitops.git
+    targetRevision: main
+    path: apps/sample-nodejs
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sample-nodejs
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
