@@ -3,6 +3,10 @@ kind: Application
 metadata:
   name: sample-nodejs
   namespace: argocd
+  # Cascading deletion: removing this Application also tears down its workload
+  # resources (Deployment/Service/Ingress/ConfigMap/Secret) in the target namespace.
+  finalizers:
+    - resources-finalizer.argoproj.io
 spec:
   project: default
   source:
@@ -15,9 +19,21 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: sample-nodejs
+  # Bound history so the ArgoCD UI / API doesn't grow unbounded.
+  revisionHistoryLimit: 5
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # ServerSideApply handles large CRDs / annotation-size limits cleanly
+      # (we used --server-side when installing ArgoCD itself for the same reason).
+      - ServerSideApply=true
+    # Retry transient sync failures instead of stalling until manual intervention.
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
