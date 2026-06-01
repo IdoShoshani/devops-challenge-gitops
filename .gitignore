@@ -1,0 +1,14 @@
+# Helm packaging output
+*.tgz
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+
+# Misc
+*.orig

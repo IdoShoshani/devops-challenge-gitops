@@ -15,18 +15,18 @@ Single source of truth for what runs in the cluster. ArgoCD watches `apps/sample
 devops-challenge-gitops/
 ├── apps/sample-nodejs/
 │   ├── Chart.yaml
-│   ├── values.yaml             # CI bumps image.tag here (line ~4)
+│   ├── values.yaml              # CI bumps image.tag here
+│   ├── .helmignore
 │   └── templates/
-│       ├── _helpers.tpl
-│       ├── deployment.yaml      # /ready + /live probes, resources, envFrom, Prometheus annotations
+│       ├── _helpers.tpl          # name/fullname/chart/labels helpers (fullname is additive, future-proof)
+│       ├── deployment.yaml       # /ready + /live probes, resources, envFrom, Prometheus annotations
 │       ├── service.yaml
 │       ├── ingress.yaml
 │       ├── configmap.yaml
 │       └── secret.yaml
 ├── argocd/
-│   └── application.yaml         # ArgoCD Application: auto-sync, prune, self-heal
-├── kind/
-│   └── kind-config.yaml         # Local kind cluster (alternative — see "Deviations")
+│   └── application.yaml          # ArgoCD Application: auto-sync, prune, self-heal
+├── .gitignore
 └── README.md
 ```
 
