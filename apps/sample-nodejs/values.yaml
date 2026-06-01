@@ -1,3 +1,27 @@
+# =============================================================================
+# sample-nodejs Helm chart values
+# =============================================================================
+#
+# Maintainers, please read before editing this file:
+#
+# The CI promote job in IdoShoshani/sample-nodejs rewrites this file with
+# `yq -i '.image.tag = strenv(TAG)'` after every release. yq reflows YAML —
+# it strips blank lines and reformats quotes around the edited path. Keep
+# rich documentation here at the top (yq leaves the file header alone) and
+# keep inline comments short.
+#
+# Top-level keys, briefly:
+#   replicaCount       Number of Deployment replicas.
+#   image              Container image coordinates. CI bumps image.tag here.
+#   imagePullSecrets   Empty for the public Docker Hub repo; populate to use a private one.
+#   service            ClusterIP service in front of the pods.
+#   ingress            nginx-ingress, host sample-nodejs.local (see README for the macOS .local quirk).
+#   resources          Pod CPU + memory requests/limits.
+#   config             Non-sensitive env vars injected via configMapRef.
+#   secret             Sensitive env vars injected via secretRef. Replace API_KEY in any real deploy.
+#   probes             Probe paths (the app's built-in /ready and /live endpoints).
+#   metrics            Prometheus scrape annotations toggle.
+# =============================================================================
 replicaCount: 2
 image:
   repository: idoshoshani123/sample-nodejs
