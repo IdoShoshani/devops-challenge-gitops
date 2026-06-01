@@ -6,6 +6,12 @@ metadata:
     {{- include "sample-nodejs.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       {{- include "sample-nodejs.selectorLabels" . | nindent 6 }}
@@ -24,9 +30,15 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      # Grace period for ingress endpoints to drop the pod from rotation before the
+      # process exits; the preStop sleep buys time for in-flight requests to drain.
+      terminationGracePeriodSeconds: 30
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: {{ include "sample-nodejs.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -39,6 +51,19 @@ spec:
                 name: {{ include "sample-nodejs.name" . }}-config
             - secretRef:
                 name: {{ include "sample-nodejs.name" . }}-secret
+          # Pod-template-level securityContext sets runAsNonRoot/UID; this block
+          # tightens what the container itself can do.
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          # Express needs nothing on disk, but Node/libc may use /tmp; provide an
+          # emptyDir for it so readOnlyRootFilesystem stays strict.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
@@ -51,5 +76,14 @@ spec:
               port: http
             initialDelaySeconds: 10
             periodSeconds: 15
+          # SIGTERM is sent immediately; sleep gives kube-proxy / ingress
+          # controllers a moment to remove the endpoint before the process exits.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}

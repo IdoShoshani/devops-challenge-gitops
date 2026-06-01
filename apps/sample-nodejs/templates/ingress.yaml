@@ -5,8 +5,17 @@ metadata:
   name: {{ include "sample-nodejs.name" . }}
   labels:
     {{- include "sample-nodejs.labels" . | nindent 4 }}
+  annotations:
+    # The app speaks HTTP only today; disable nginx's automatic 308 redirect.
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  # TODO: enable TLS once a cert is provisioned (cert-manager + Let's Encrypt,
+  #       or a manually created Secret). Wire in like:
+  # tls:
+  #   - hosts:
+  #       - {{ .Values.ingress.host }}
+  #     secretName: sample-nodejs-tls
   rules:
     - host: {{ .Values.ingress.host }}
       http:
