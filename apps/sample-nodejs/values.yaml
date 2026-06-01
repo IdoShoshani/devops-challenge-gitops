@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: idoshoshani123/sample-nodejs
-  tag: "1.0.0-8"
+  tag: "1.0.0-10"
   pullPolicy: IfNotPresent
 # Docker Hub repo is public; no pull secret needed. Leave empty to skip imagePullSecrets in the Deployment.
 imagePullSecrets: []
